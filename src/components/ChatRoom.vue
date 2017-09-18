@@ -2,48 +2,46 @@
   <div class="container">
     <!-- UserName input -->
     Input Your Name :
-    <input type="text" class="username" v-model="userName">
-    <button class="js-enterName" type="button" @click="setName()">Enter</button>
+    <input type="text" id="js-userName" class="userName">
+    <button type="button" @click="setName()">Set</button>
 
     <!-- chatRoom -->
     <div class="chatRoom">
       <!-- Head -->
       <div class="roomHead">
-        <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class=" roomHead__img rounded-circle">
+        <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class="roomHead__img">
         <div class="roomHead__title">Test Room</div>
       </div>
 
       <!-- Body -->
       <div class="roomBody">
-        <!-- otherPeople -->
-        <div class="messageBox">
-          <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class=" messageBox__img rounded-circle">
-        </div>
-        <div class="messageBox__name">
-          User
-        </div>
-        <div class="messageBox__text">
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ducimus fugit ullam voluptas quasi, delectus, labore fugiat quidem rerum repellat architecto quam nihil? Temporibus nisi quibusdam necessitatibus porro optio, aperiam ad consequuntur id assumenda fuga, fugit qui enim labore odit beatae veritatis, eveniet placeat dolorum? Assumenda alias aspernatur eveniet veniam minus.
-          <div class="messageBox__time">
-            下午 9:30
-          </div>
-        </div>
-
-        <!-- self -->
-        <div class="messageBox">
-          <div class="messageBox__text--self">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ducimus fugit ullam voluptas quasi, delectus, labore fugiat quidem rerum repellat architecto quam nihil? Temporibus nisi quibusdam necessitatibus porro optio, aperiam ad consequuntur id assumenda fuga, fugit qui enim labore odit beatae veritatis, eveniet placeat dolorum? Assumenda alias aspernatur eveniet veniam minus.
-            <div class="messageBox__time--self">
-              下午 9:30
+        <div v-for="item in messages">
+          <!-- Other People -->
+          <template v-if="item.userName != userName">
+            <div class="messageBox">
+              <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class="messageBox__img">
+              <div class="messageBox_content">
+                <div class="messageBox__name">{{item.userName}}</div>
+                <div class="messageBox__text">{{item.message}}</div>
+              </div>
+              <div class="messageBox__time">{{item.timeStamp}}</div>
             </div>
-          </div>
+          </template>
+          <!-- Self -->
+          <template v-if="item.userName == userName">
+            <div class="messageBox messageBox--self">
+              <div class="messageBox__time messageBox__time--self">{{item.timeStamp}}</div>
+              <div class="messageBox_content messageBox_content--self">
+                <div class="messageBox__text messageBox__text--self">{{item.message}}</div>
+              </div>
+            </div>
+          </template>
         </div>
-
-        <!-- Bottom -->
-        <div class="roomBottom">
-          <div class="roomBottom__tools"></div>
-          <textarea class="roomBottom__input"></textarea>
-        </div>
+      </div>
+      <!-- Bottom -->
+      <div class="roomBottom">
+        <div class="roomBottom__tools"></div>
+        <textarea id="js-message" class="roomBottom__input" v-bind:class="{ disable: !userName }" @keyup.enter="sendMessage($event)"></textarea>
       </div>
     </div>
   </div>
@@ -51,61 +49,87 @@
 
 
 <script>
-let msgRef = firebase.database().ref('/messages/');
+const msgRef = firebase.database().ref('/messages/');
+
 export default {
   name: 'ChatRoom',
   data() {
     return {
       userName: '',
-      messages: [
-        {
-          userName: 'User',
-          message: 'im user'
-        },
-        {
-          userName: 'GuaHsu',
-          message: 'im GuaHsu'
-        }
-      ]
+      messages: []
     }
   },
   methods: {
     setName() {
-      let vm = this;
-      messages = [];
+      const vm = this;
+      const userName = document.querySelector('#js-userName').value;
+      console.log(userName);
+      vm.userName = userName;
+    },
+    getTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const format = (hours >= 12) ? "下午" : "上午";
+      const timeDatas = {
+        nowTime: `${format} ${hours}:${minutes}`,
+        timeStamp: Math.floor(now / 1000)
+      }
+      return timeDatas;
+    },
+    sendMessage(e) {
+      if (e.shiftKey) { return; }
+      const vm = this;
+      const userName = document.querySelector('#js-userName');
+      const message = document.querySelector('#js-message');
+      const timeDatas = vm.getTime();
+      msgRef.child(timeDatas.timeStamp).set({
+        userName: userName.value,
+        message: message.value,
+        timeStamp: timeDatas.nowTime
+      })
+      message.value = '';
     }
   },
   mounted() {
-    let vm = this;
+    const vm = this;
+    let message = [];
     msgRef.on('value', function(snapshot) {
-      var val = snapshot.val();
+      const val = snapshot.val();
       vm.messages = val;
-    });
+    })
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+* {
+  font-family: '微軟正黑體';
+}
+.disable {
+  pointer-events: none;
+}
+
 .container {
   padding: 50px;
 }
 
-.username {
+.userName {
   margin-bottom: 20px;
 }
 
 .chatRoom {
-  padding: 5px 0px;
-  background: linear-gradient(to bottom, #2B364B 0%, #FFFFFF 100%);
-  width: 500px;
   border-radius: 5px;
+  width: 500px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
 
 .roomHead {
+  padding-top: 5px;
   width: 100%;
   height: 80px;
+  border-radius: 5px 5px 0px 0px;
   background-color: #2B364B;
   position: relative;
 }
@@ -127,13 +151,14 @@ export default {
 }
 
 .roomBody {
+  padding: 10px 0px;
   background-color: #fff;
-  height: 100%;
+  height: 600px;
+  overflow-y: auto;
 }
 
 .messageBox {
-  padding: 20px 10px;
-  display: inline-block;
+  padding: 5px 10px;
   position: relative;
 }
 
@@ -141,53 +166,60 @@ export default {
   height: 40px;
   width: 40px;
   border-radius: 50%;
+  vertical-align: top;
+  display: inline-block;
+}
+
+.messageBox_content {
+  max-width: 360px;
+  display: inline-block;
 }
 
 .messageBox__name {
+  margin: 5px 0px 5px 5px;
   font-size: 13px;
   color: #727C8A;
-  margin: -60px 0px 0px 60px;
+  vertical-align: top;
 }
 
 .messageBox__text {
-  max-width: 380px;
+  margin: 5px 0px 5px 5px;
+  padding: 8px 12px;
   font-size: 12px;
+  letter-spacing: 0.6px;
   background-color: #E3E8EB;
-  padding: 6px 15px;
-  border-radius: 10px;
-  margin: 0px 100px 0px 60px;
+  border-radius: 12px;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .messageBox__time {
-  font-size: 12px;
+  transform: scale(0.7);
   color: #ACB0B8;
-  text-align: right;
-  margin: -10px -75px 0px 0px;
+  vertical-align: bottom;
+  margin: 0px 0px 5px -5px;
+  display: inline-block;
 }
 
-
 /* self */
+.messageBox--self {
+  text-align: right;
+}
 
 .messageBox__text--self {
-  max-width: 380px;
-  font-size: 12px;
   background-color: #AFF47E;
-  padding: 6px 15px;
-  border-radius: 10px;
-  margin: 0px 20px 0px 120px;
+  margin-right: 25px;
 }
 
 .messageBox__time--self {
-  font-size: 12px;
-  color: #ACB0B8;
-  margin: -10px 0px 0px -75px;
+  margin: 0px -5px 5px 0px;
 }
 
-
 /* Bottom */
-
 .roomBottom {
   bottom: 0px;
+  border-radius: 0px 0px 5px 5px ;
+  background-color: #FFFFFF;
 }
 
 .roomBottom__tools {
