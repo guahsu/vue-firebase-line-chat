@@ -113,29 +113,24 @@ export default {
   font-family: '微軟正黑體';
   margin: auto;
 }
-
 .disable {
   pointer-events: none;
 }
-
 .container {
-  padding: 50px 0px;
+  padding: 10px 50px 0px 0px;
+  height: 900px;
 }
-
 .nameInput {
   text-align: center;
 }
-
 .userName {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
-
 .chatRoom {
   border-radius: 5px;
   max-width: 500px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
-
 .roomHead {
   padding-top: 5px;
   width: 100%;
@@ -144,7 +139,6 @@ export default {
   background-color: #2B364B;
   position: relative;
 }
-
 .roomHead__img {
   width: 50px;
   height: 50px;
@@ -152,7 +146,6 @@ export default {
   border-radius: 50%;
   position: absolute;
 }
-
 .roomHead__title {
   font-size: 13px;
   color: #FFFFFF;
@@ -160,20 +153,17 @@ export default {
   margin: 25px 0px 0px 75px;
   position: absolute;
 }
-
 .roomBody {
   padding: 10px 0px;
   background-color: #fff;
-  height: 600px;
+  height: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
-
 .messageBox {
   padding: 5px 10px;
   position: relative;
 }
-
 .messageBox__img {
   height: 40px;
   width: 40px;
@@ -181,19 +171,16 @@ export default {
   vertical-align: top;
   display: inline-block;
 }
-
 .messageBox_content {
   max-width: 70%;
   display: inline-block;
 }
-
 .messageBox__name {
   margin: 5px 0px 5px 5px;
   font-size: 13px;
   color: #727C8A;
   vertical-align: top;
 }
-
 .messageBox__text {
   margin: 5px 0px 5px 5px;
   padding: 8px 12px;
@@ -205,7 +192,6 @@ export default {
   text-align: left;
   word-break: break-all;
 }
-
 .messageBox__time {
   transform: scale(0.7);
   color: #ACB0B8;
@@ -214,45 +200,32 @@ export default {
   display: inline-block;
 }
 
-
-
-
-
-
 /* self */
-
 .messageBox--self {
   text-align: right;
 }
-
 .messageBox__text--self {
   background-color: #AFF47E;
   margin-right: 25px;
 }
-
 .messageBox__time--self {
   margin: 0px -16px 5px 0px;
 }
 
-
 /* Bottom */
-
 .roomBottom {
   bottom: 0px;
   border-radius: 0px 0px 5px 5px;
   background-color: #FFFFFF;
 }
-
 .roomBottom__tools {
   border-top: solid 1px #E7E7E7;
   border-bottom: solid 2px #E7E7E7;
   background-color: #F6F6F6;
   height: 30px
 }
-
 .roomBottom__input {
   margin: 10px 0px 0px 10px;
-  width: 95%;
   height: 60px;
   border: none;
   resize: none;
