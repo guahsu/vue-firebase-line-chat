@@ -1,10 +1,11 @@
 <template>
   <div class="container">
     <!-- UserName input -->
-    Input Your Name :
-    <input type="text" id="js-userName" class="userName">
-    <button type="button" @click="setName()">Set</button>
-
+    <div class="nameInput">
+      UserName :
+      <input type="text" id="js-userName" class="userName">
+      <button type="button" @click="setName()">Set</button>
+    </div>
     <!-- chatRoom -->
     <div class="chatRoom">
       <!-- Head -->
@@ -14,7 +15,7 @@
       </div>
 
       <!-- Body -->
-      <div class="roomBody">
+      <div id="js-roomBody" class="roomBody">
         <div v-for="item in messages">
           <!-- Other People -->
           <template v-if="item.userName != userName">
@@ -89,11 +90,15 @@ export default {
         timeStamp: timeDatas.nowTime
       })
       message.value = '';
+      // 當資料載入完成後再滾到底
+      vm.$nextTick(() => {
+        const roomBody = document.querySelector('#js-roomBody');
+        roomBody.scrollTop = roomBody.scrollHeight;
+      })
     }
   },
   mounted() {
     const vm = this;
-    let message = [];
     msgRef.on('value', function(snapshot) {
       const val = snapshot.val();
       vm.messages = val;
@@ -106,13 +111,19 @@ export default {
 <style scoped>
 * {
   font-family: '微軟正黑體';
+  margin: auto;
 }
+
 .disable {
   pointer-events: none;
 }
 
 .container {
-  padding: 50px;
+  padding: 50px 0px;
+}
+
+.nameInput {
+  text-align: center;
 }
 
 .userName {
@@ -121,7 +132,7 @@ export default {
 
 .chatRoom {
   border-radius: 5px;
-  width: 500px;
+  max-width: 500px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
 
@@ -155,6 +166,7 @@ export default {
   background-color: #fff;
   height: 600px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .messageBox {
@@ -171,7 +183,7 @@ export default {
 }
 
 .messageBox_content {
-  max-width: 360px;
+  max-width: 70%;
   display: inline-block;
 }
 
@@ -191,17 +203,24 @@ export default {
   border-radius: 12px;
   line-height: 1.5;
   text-align: left;
+  word-break: break-all;
 }
 
 .messageBox__time {
   transform: scale(0.7);
   color: #ACB0B8;
   vertical-align: bottom;
-  margin: 0px 0px 5px -5px;
+  margin: 0px 0px 5px -12px;
   display: inline-block;
 }
 
+
+
+
+
+
 /* self */
+
 .messageBox--self {
   text-align: right;
 }
@@ -212,13 +231,15 @@ export default {
 }
 
 .messageBox__time--self {
-  margin: 0px -5px 5px 0px;
+  margin: 0px -16px 5px 0px;
 }
 
+
 /* Bottom */
+
 .roomBottom {
   bottom: 0px;
-  border-radius: 0px 0px 5px 5px ;
+  border-radius: 0px 0px 5px 5px;
   background-color: #FFFFFF;
 }
 
@@ -236,5 +257,17 @@ export default {
   border: none;
   resize: none;
   outline: none;
+}
+
+@media screen and (max-width: 425px) {
+  .messageBox_content {
+    max-width: 60%;
+  }
+}
+
+@media screen and (max-width: 385px) {
+  .messageBox_content {
+    max-width: 50%;
+  }
 }
 </style>
