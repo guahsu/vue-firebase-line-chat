@@ -1,26 +1,29 @@
 <template>
   <div class="container">
-    <!-- UserName input -->
-    <div class="nameInput">
-      UserName :
-      <input type="text" id="js-userName" class="userName">
-      <button type="button" @click="setName()">Set</button>
+    <!-- name area -->
+    <div class="name">
+      <h3>Name：{{ userName }}</h3>
+      <div class="reset" @click="setName()">Reset Name</div>
     </div>
-    <!-- chatRoom -->
+    <!-- chat room -->
     <div class="chatRoom">
-      <!-- Head -->
+      <!-- head -->
       <div class="roomHead">
-        <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class="roomHead__img">
+        <div class="roomHead__topButtons">
+          <div class="roomHead__button close"></div>
+          <div class="roomHead__button minimize"></div>
+          <div class="roomHead__button zoom"></div>
+        </div>
+        <img src="https://lorempixel.com/50/50/" class="roomHead__img" draggable="false">
         <div class="roomHead__title">Test Room</div>
       </div>
-
-      <!-- Body -->
+      <!-- body -->
       <div id="js-roomBody" class="roomBody">
-        <div v-for="item in messages">
-          <!-- Other People -->
+        <template v-for="item in messages">
+          <!-- other people -->
           <template v-if="item.userName != userName">
             <div class="messageBox">
-              <img src="https://www.w3schools.com/bootstrap/cinqueterre.jpg" class="messageBox__img">
+              <img src="https://lorempixel.com/40/40/" class="messageBox__img" draggable="false">
               <div class="messageBox_content">
                 <div class="messageBox__name">{{item.userName}}</div>
                 <div class="messageBox__text">{{item.message}}</div>
@@ -28,7 +31,7 @@
               <div class="messageBox__time">{{item.timeStamp}}</div>
             </div>
           </template>
-          <!-- Self -->
+          <!-- self -->
           <template v-if="item.userName == userName">
             <div class="messageBox messageBox--self">
               <div class="messageBox__time messageBox__time--self">{{item.timeStamp}}</div>
@@ -37,21 +40,34 @@
               </div>
             </div>
           </template>
+        </template>
+      </div>
+      <!-- bottom -->
+      <div class="roomBottom" v-bind:class="{ disable: !userName }">
+        <div class="roomBottom__tools"></div>
+        <div class="roomBottom__input">
+          <textarea id="js-message" class="roomBottom__input__textarea" v-bind:class="{ disable: !userName }" @keydown.enter="sendMessage($event)"></textarea>
         </div>
       </div>
-      <!-- Bottom -->
-      <div class="roomBottom">
-        <div class="roomBottom__tools"></div>
-        <textarea id="js-message" class="roomBottom__input" v-bind:class="{ disable: !userName }" @keyup.enter="sendMessage($event)"></textarea>
+    </div>
+    <!-- modal -->
+    <div id="js-modal" class="modal">
+      <div class="modal__container">
+        <header class="modal__header">
+          <h2 class="view-title">輸入名稱</h2>
+        </header>
+        <div class="modal__body">
+          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()">
+          <div class="button" @click="saveName()">設定</div>
+        </div>
+        <footer class="modal__footer"></footer>
       </div>
     </div>
   </div>
 </template>
 
-
 <script>
 const msgRef = firebase.database().ref('/messages/');
-
 export default {
   name: 'ChatRoom',
   data() {
@@ -62,39 +78,39 @@ export default {
   },
   methods: {
     setName() {
+      document.querySelector('#js-modal').style.display = 'block';
+    },
+    saveName() {
       const vm = this;
       const userName = document.querySelector('#js-userName').value;
-      console.log(userName);
+      if (userName.trim() == '') { return; }
       vm.userName = userName;
+      document.querySelector('#js-modal').style.display = 'none';
     },
     getTime() {
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const format = (hours >= 12) ? "下午" : "上午";
-      const timeDatas = {
-        nowTime: `${format} ${hours}:${minutes}`,
-        timeStamp: Math.floor(now / 1000)
-      }
-      return timeDatas;
+      return `${format} ${hours}:${minutes}`;
     },
     sendMessage(e) {
-      if (e.shiftKey) { return; }
       const vm = this;
-      const userName = document.querySelector('#js-userName');
-      const message = document.querySelector('#js-message');
-      const timeDatas = vm.getTime();
-      msgRef.child(timeDatas.timeStamp).set({
+      let userName = document.querySelector('#js-userName');
+      let message = document.querySelector('#js-message');
+      if (e.shiftKey) {
+        return false;
+      }
+      if(message.value.length <=1 && message.value.trim() == '') {
+        
+        return false;
+      }
+      msgRef.push({
         userName: userName.value,
         message: message.value,
-        timeStamp: timeDatas.nowTime
+        timeStamp: vm.getTime()
       })
       message.value = '';
-      // 當資料載入完成後再滾到底
-      vm.$nextTick(() => {
-        const roomBody = document.querySelector('#js-roomBody');
-        roomBody.scrollTop = roomBody.scrollHeight;
-      })
     }
   },
   mounted() {
@@ -103,56 +119,92 @@ export default {
       const val = snapshot.val();
       vm.messages = val;
     })
+  },
+  updated() {
+    const roomBody = document.querySelector('#js-roomBody');
+    roomBody.scrollTop = roomBody.scrollHeight;
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 * {
   font-family: '微軟正黑體';
   margin: auto;
 }
-.disable {
-  pointer-events: none;
-}
 .container {
   padding: 10px 50px 0px 0px;
   height: 900px;
 }
-.nameInput {
+.name {
   text-align: center;
+  margin: 10px 50px 10px 0px;
+  color: #333333;
 }
-.userName {
-  margin-bottom: 10px;
+.reset {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #333333;
+  background-color: #CCCCCC;
+  display: inline-block;
+  cursor: pointer;
 }
 .chatRoom {
   border-radius: 5px;
   max-width: 500px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
+
+/* Head */
 .roomHead {
-  padding-top: 5px;
   width: 100%;
-  height: 80px;
+  height: 85px;
   border-radius: 5px 5px 0px 0px;
   background-color: #2B364B;
   position: relative;
 }
+.roomHead__topButtons {
+  padding: 2px 0px 5px 10px;
+  text-align: left;
+}
+.roomHead__button {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  margin: 0px 1px;
+  display: inline-block;
+  cursor: pointer;
+}
+.close {
+  background-color: #FF625A;
+}
+.minimize {
+  background-color: #FFC02F;
+}
+.zoom {
+  background-color: #28CB40;
+}
 .roomHead__img {
   width: 50px;
   height: 50px;
-  margin: 20px 10px 6px 12px;
+  margin: 0px 10px 6px 12px;
   border-radius: 50%;
   position: absolute;
+  cursor: pointer;
 }
 .roomHead__title {
   font-size: 13px;
+  font-weight: 600;
   color: #FFFFFF;
   height: 80px;
-  margin: 25px 0px 0px 75px;
+  margin: 5px 0px 0px 75px;
   position: absolute;
+  cursor: pointer;
 }
+
+/* Body */
 .roomBody {
   padding: 10px 0px;
   background-color: #fff;
@@ -170,6 +222,7 @@ export default {
   border-radius: 50%;
   vertical-align: top;
   display: inline-block;
+  cursor: pointer;
 }
 .messageBox_content {
   max-width: 70%;
@@ -180,6 +233,7 @@ export default {
   font-size: 13px;
   color: #727C8A;
   vertical-align: top;
+  cursor: pointer;
 }
 .messageBox__text {
   margin: 5px 0px 5px 5px;
@@ -191,6 +245,7 @@ export default {
   line-height: 1.5;
   text-align: left;
   word-break: break-all;
+  white-space: pre-line;
 }
 .messageBox__time {
   transform: scale(0.7);
@@ -199,8 +254,6 @@ export default {
   margin: 0px 0px 5px -12px;
   display: inline-block;
 }
-
-/* self */
 .messageBox--self {
   text-align: right;
 }
@@ -225,19 +278,95 @@ export default {
   height: 30px
 }
 .roomBottom__input {
-  margin: 10px 0px 0px 10px;
+  padding: 10px 10px 5px 10px;
+}
+.roomBottom__input__textarea {
+  width: 100%;
   height: 60px;
   border: none;
   resize: none;
   outline: none;
 }
 
+/* status */
+.disable {
+  pointer-events: none;
+  background-color: #ebebeb;
+}
+
+/* modal */
+.modal {
+  z-index: 3;
+  padding: 50px 0px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  animation: opac 0.8s;
+  letter-spacing: 2px;
+  text-align: unset;
+}
+.modal__container {
+  margin: auto;
+  position: relative;
+  padding: 10px;
+  outline: 0;
+  max-width: 300px;
+}
+.modal__header {
+  color: #fff;
+  background-color: #2B364B;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px 5px 0px 0px;
+}
+.modal__body {
+  background-color: #fff;
+  padding: 20px 50px;
+  text-align: center;
+}
+.modal__body p {
+  text-align: left;
+  line-height: 24px;
+}
+.modal__img {
+  max-width: 100%;
+}
+.modal__footer {
+  color: #fff;
+  background-color: #2B364B;
+  height: 8px;
+  border-radius: 0px 0px 5px 5px;
+}
+
+/* name set */
+.userName {
+  height: 30px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border: solid 1px #cbcbcb;
+  width: 70%;
+  text-align: center;
+  display: inline-block;
+}
+.button {
+  font-size: 14px;
+  color: #FFFFFF;
+  background-color: #2B364B;
+  padding: 10px 20px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* media */
 @media screen and (max-width: 425px) {
   .messageBox_content {
     max-width: 60%;
   }
 }
-
 @media screen and (max-width: 385px) {
   .messageBox_content {
     max-width: 50%;
