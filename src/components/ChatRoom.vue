@@ -46,7 +46,7 @@
       <div class="roomBottom" v-bind:class="{ disable: !userName }">
         <div class="roomBottom__tools"></div>
         <div class="roomBottom__input">
-          <textarea id="js-message" class="roomBottom__input__textarea" v-bind:class="{ disable: !userName }" @keydown.enter="sendMessage($event)"></textarea>
+          <textarea id="js-message" class="roomBottom__input__textarea" rows="1" v-bind:class="{ disable: !userName }" @keydown.enter="sendMessage($event)"></textarea>
         </div>
       </div>
     </div>
@@ -102,7 +102,8 @@ export default {
         return false;
       }
       if(message.value.length <=1 && message.value.trim() == '') {
-        
+        message.value = '';
+        e.preventDefault();
         return false;
       }
       msgRef.push({
@@ -111,6 +112,7 @@ export default {
         timeStamp: vm.getTime()
       })
       message.value = '';
+      e.preventDefault();
     }
   },
   mounted() {
