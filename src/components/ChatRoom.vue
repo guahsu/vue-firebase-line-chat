@@ -1,13 +1,14 @@
 <template>
   <div class="container">
-    <!-- name area -->
+    <!-- 區塊：name area -->
     <div class="name">
       <h3>Name：{{ userName }}</h3>
+      <!-- 註解：使用@click來偵測click，觸發時執行method中的setName() -->
       <div class="reset" @click="setName()">Reset Name</div>
     </div>
-    <!-- chat room -->
+    <!-- 區塊：chat room -->
     <div class="chatRoom">
-      <!-- head -->
+      <!-- 區塊：head -->
       <div class="roomHead">
         <div class="roomHead__topButtons">
           <div class="roomHead__button close"></div>
@@ -17,47 +18,54 @@
         <img src="https://lorempixel.com/50/50/" class="roomHead__img" draggable="false">
         <div class="roomHead__title">Test Room</div>
       </div>
-      <!-- body -->
+      <!-- 區塊：body -->
       <div id="js-roomBody" class="roomBody">
+        <!-- 註解：使用template來當迴圈容器，或是判斷用的容器，當條件達成時產出template內容 -->
         <template v-for="item in messages">
           <!-- other people -->
           <template v-if="item.userName != userName">
             <div class="messageBox">
               <img src="https://lorempixel.com/40/40/" class="messageBox__img" draggable="false">
-              <div class="messageBox_content">
+              <div class="messageBox__content">
+                <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
                 <div class="messageBox__text">{{item.message}}</div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
             </div>
           </template>
-          <!-- self -->
+          <!-- 區塊：self -->
           <template v-if="item.userName == userName">
             <div class="messageBox messageBox--self">
               <div class="messageBox__time messageBox__time--self">{{item.timeStamp}}</div>
-              <div class="messageBox_content messageBox_content--self">
+              <div class="messageBox__content messageBox__content--self">
                 <div class="messageBox__text messageBox__text--self">{{item.message}}</div>
               </div>
             </div>
           </template>
         </template>
       </div>
-      <!-- bottom -->
-      <div class="roomBottom" v-bind:class="{ disable: !userName }">
+      <!-- 區塊：bottom -->
+      <!-- 註解：使用:class來寫class是否顯示的判斷式{ class: 判斷式 } -->
+      <div class="roomBottom" :class="{ disable: !userName }">
         <div class="roomBottom__tools"></div>
         <div class="roomBottom__input">
-          <textarea id="js-message" class="roomBottom__input__textarea" rows="1" v-bind:class="{ disable: !userName }" @keydown.enter="sendMessage($event)"></textarea>
+          <!-- 若要再帶入原生js的event(e)到function中，必須使用$event當參數傳入 -->
+          <textarea id="js-message" class="roomBottom__input__textarea"
+                    :class="{ disable: !userName }"
+                    @keydown.enter="sendMessage($event)"></textarea>
         </div>
       </div>
     </div>
-    <!-- modal -->
+    <!-- 區塊：modal -->
     <div id="js-modal" class="modal">
       <div class="modal__container">
         <header class="modal__header">
           <h2 class="view-title">輸入名稱</h2>
         </header>
         <div class="modal__body">
-          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()">
+          <!-- 註解：使用@keydown.enter來偵測keydown enter，觸發時執行method中的saveName() -->
+          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter.="saveName()">
           <div class="button" @click="saveName()">設定</div>
         </div>
         <footer class="modal__footer"></footer>
@@ -67,26 +75,35 @@
 </template>
 
 <script>
+// msgRef = firebase中的db/messages/，firebase中可設定
 const msgRef = firebase.database().ref('/messages/');
 export default {
+  // 指定此頁使用的name
   name: 'ChatRoom',
+  // 資料位置，於html中可用{{}}渲染出來
   data() {
     return {
       userName: '',
       messages: []
     }
   },
+  // 這個頁面的functions
   methods: {
+    /** 彈出設定視窗 */
     setName() {
       document.querySelector('#js-modal').style.display = 'block';
     },
+    /** 儲存設定名稱 */
     saveName() {
+      // vue的mtthod中this是指export中這整塊的資料
       const vm = this;
       const userName = document.querySelector('#js-userName').value;
       if (userName.trim() == '') { return; }
+      // 這裡的vm.userName(this.userName)就是data()裡面的userName
       vm.userName = userName;
       document.querySelector('#js-modal').style.display = 'none';
     },
+    /** 取得時間 */
     getTime() {
       const now = new Date();
       const hours = now.getHours();
@@ -94,27 +111,34 @@ export default {
       const format = (hours >= 12) ? "下午" : "上午";
       return `${format} ${hours}:${minutes}`;
     },
+    /** 傳送訊息 */
     sendMessage(e) {
       const vm = this;
       let userName = document.querySelector('#js-userName');
       let message = document.querySelector('#js-message');
+      // 如果是按住shift則不傳送訊息(多行輸入)
       if (e.shiftKey) {
         return false;
       }
+      // 如果輸入是空則不傳送訊息
       if(message.value.length <=1 && message.value.trim() == '') {
-        message.value = '';
+        // 避免enter產生的空白換行
         e.preventDefault();
         return false;
       }
+      // 對firebase的db做push，db只能接受json物件格式，若要用陣列要先轉字串來存
       msgRef.push({
         userName: userName.value,
         message: message.value,
+        // 取得時間，這裡的vm.getTime()就是method中的getTime
         timeStamp: vm.getTime()
       })
+      // 清空輸入欄位並避免enter產生的空白換行
       message.value = '';
       e.preventDefault();
     }
   },
+  // mounted是vue的生命週期之一，代表模板已編譯完成，已經取值準備渲染元件了
   mounted() {
     const vm = this;
     msgRef.on('value', function(snapshot) {
@@ -122,7 +146,9 @@ export default {
       vm.messages = val;
     })
   },
+  // update是vue的生命週期之一，在元件渲染完成後執行
   updated() {
+    // 當畫面渲染完成，把聊天視窗滾到最底部(讀取最新消息)
     const roomBody = document.querySelector('#js-roomBody');
     roomBody.scrollTop = roomBody.scrollHeight;
   }
@@ -196,6 +222,7 @@ export default {
   position: absolute;
   cursor: pointer;
 }
+
 .roomHead__title {
   font-size: 13px;
   font-weight: 600;
@@ -214,10 +241,12 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
 .messageBox {
   padding: 5px 10px;
   position: relative;
 }
+
 .messageBox__img {
   height: 40px;
   width: 40px;
@@ -226,10 +255,12 @@ export default {
   display: inline-block;
   cursor: pointer;
 }
-.messageBox_content {
+
+.messageBox__content {
   max-width: 70%;
   display: inline-block;
 }
+
 .messageBox__name {
   margin: 5px 0px 5px 5px;
   font-size: 13px;
@@ -237,6 +268,7 @@ export default {
   vertical-align: top;
   cursor: pointer;
 }
+
 .messageBox__text {
   margin: 5px 0px 5px 5px;
   padding: 8px 12px;
@@ -247,8 +279,10 @@ export default {
   line-height: 1.5;
   text-align: left;
   word-break: break-all;
+  /* 與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
 }
+
 .messageBox__time {
   transform: scale(0.7);
   color: #ACB0B8;
@@ -259,13 +293,16 @@ export default {
 .messageBox--self {
   text-align: right;
 }
+
 .messageBox__text--self {
   background-color: #AFF47E;
   margin-right: 25px;
 }
+
 .messageBox__time--self {
   margin: 0px -16px 5px 0px;
 }
+
 
 /* Bottom */
 .roomBottom {
@@ -273,6 +310,7 @@ export default {
   border-radius: 0px 0px 5px 5px;
   background-color: #FFFFFF;
 }
+
 .roomBottom__tools {
   border-top: solid 1px #E7E7E7;
   border-bottom: solid 2px #E7E7E7;
@@ -365,12 +403,12 @@ export default {
 
 /* media */
 @media screen and (max-width: 425px) {
-  .messageBox_content {
+  .messageBox__content {
     max-width: 60%;
   }
 }
 @media screen and (max-width: 385px) {
-  .messageBox_content {
+  .messageBox__content {
     max-width: 50%;
   }
 }
