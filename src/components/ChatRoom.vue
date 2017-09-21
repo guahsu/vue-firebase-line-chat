@@ -75,7 +75,7 @@
 </template>
 
 <script>
-// msgRef = firebase中的db/messages/，firebase中可設定
+// msgRef = firebase中的資料表/messages/，若沒有的會自動建立
 const msgRef = firebase.database().ref('/messages/');
 export default {
   // 指定此頁使用的name
@@ -108,8 +108,7 @@ export default {
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-      const format = (hours >= 12) ? "下午" : "上午";
-      return `${format} ${hours}:${minutes}`;
+      return `${(hours >= 12) ? "下午" : "上午"} ${hours}:${(minutes < 10) ? '0' + minutes : minutes}`;
     },
     /** 傳送訊息 */
     sendMessage(e) {
@@ -279,7 +278,7 @@ export default {
   line-height: 1.5;
   text-align: left;
   word-break: break-all;
-  /* 與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
+  /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
 }
 
