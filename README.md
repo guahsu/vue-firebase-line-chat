@@ -1,21 +1,8 @@
 # vue-and-firebase-line-chat
 
-> use vue and firebase to simulation Linechat
+![](https://guahsu.io/2017/09/vue-firebase-realtime-line-chat/vue_firebase_chat.gif)
 
-## Build Setup
+練習用vue & firebase刻一個仿line即時同步聊天的功能，  
+直接初體驗vue.js + firebase + webpack三種願望一次滿足XD！  
 
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-```
-
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+## [心得連結](https://guahsu.io/2017/09/vue-firebase-realtime-line-chat/)

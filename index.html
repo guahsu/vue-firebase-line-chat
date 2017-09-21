@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
@@ -35,6 +36,40 @@
 </head>
 
 <body>
+  <style>
+    body {
+      margin-top: 48px;
+    }
+
+    .GuaHsu-header {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      background-color: #333;
+      text-align: center;
+      padding: 10px;
+      color: #7ff3cb;
+      font-size: 15px;
+      font-weight: 100;
+      z-index: 999;
+    }
+
+    .GuaHsu-header span {
+      margin: 0 5px;
+    }
+
+    .GuaHsu-header a {
+      text-decoration: none;
+      color: unset;
+    }
+
+  </style>
+  <div class="GuaHsu-header">
+    <span><a href="https://guahsu.io/2017/09/vue-firebase-realtime-line-chat/" target="_blank">練習心得</a></span>
+    <span>|</span>
+    <span><a href="https://github.com/guahsu/vue-firebase-line-chat/" target="_blank">GitHub</a></span>
+  </div>
   <div id="app"></div>
   <!-- built files will be auto injected -->
 </body>
