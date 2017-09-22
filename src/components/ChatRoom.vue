@@ -30,7 +30,7 @@
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
                 <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
-                <div v-if="item.type == 'image'" class="messageBox__message"><img v-html="rawHtml" :src="item.message"></div>
+                <img class="messageBox__image" v-if="item.type == 'image'" v-html="rawHtml" :src="item.message">
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
             </div>
@@ -41,7 +41,7 @@
               <div class="messageBox__time">{{item.timeStamp}}</div>
               <div class="messageBox__content">
                 <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
-                <div v-if="item.type == 'image'" class="messageBox__message"><img v-html="rawHtml" :src="item.message"></div>
+                <img class="messageBox__image" v-if="item.type == 'image'" v-html="rawHtml" :src="item.message">
               </div>
             </div>
           </template>
@@ -305,7 +305,7 @@ export default {
 }
 .messageBox__message{
   margin: 5px 0px 5px 5px;
-  padding: 8px;
+  padding: 8px 10px 7px 11px;
   font-size: 12px;
   letter-spacing: 0.6px;
   background-color: #E3E8EB;
@@ -315,7 +315,12 @@ export default {
   word-break: break-all;
   /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
+}
+.messageBox__image {
   max-width: 100%;
+  max-height: 335px;
+  margin: 5px;
+  border-radius: 5px
 }
 .messageBox__time {
   transform: scale(0.7);
