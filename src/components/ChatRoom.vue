@@ -77,7 +77,7 @@
         </header>
         <div class="modal__body">
           <!-- 註解：使用@keydown.enter來偵測keydown enter，觸發時執行method中的saveName() -->
-          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter.="saveName()">
+          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()">
           <div class="button" @click="saveName()">設定</div>
         </div>
         <footer class="modal__footer"></footer>
