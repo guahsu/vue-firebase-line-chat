@@ -89,6 +89,9 @@
 <script>
 // msgRef = firebase中的資料表/messages/，若沒有的會自動建立
 const msgRef = firebase.database().ref('/messages/');
+msgRef.orderByChild("type").equalTo('image').on("child_added", function(snapshot) {
+  console.log(snapshot.key);
+});
 const storageRef = firebase.storage().ref('/images/');
 export default {
   // 指定此頁使用的name
@@ -224,8 +227,7 @@ export default {
   margin: auto;
 }
 .container {
-  padding: 10px 50px 0px 0px;
-  height: 900px;
+  padding: 10px 30px 0px 0px;
 }
 .name {
   text-align: center;
