@@ -409,18 +409,18 @@ export default {
   overflow: hidden;
 }
 .roomBottom__tools_upload:hover {
-  border: solid 1px #999999;
+  border: solid 1px #DCDCDC;
 }
 .roomBottom__tools_upload input {
   width: 100%;
   height: 100%;
-  /* 讓input file可以支援pointer要加pl100% */
-  padding-left: 100%;
   left: 0;
   right: 0;
   opacity: 0; 
   position: absolute;
   cursor: pointer;
+  /* 讓input file可以支援pointer要加pl100% */
+  padding-left: 100%;
 }
 .roomBottom__tools_upload img {
   height: 100%;
