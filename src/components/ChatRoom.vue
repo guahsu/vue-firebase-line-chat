@@ -60,7 +60,7 @@
         <div class="roomBottom__tools">
           <div class="roomBottom__tools_upload">
             <input type="file" accept="image/*" @change="sendImage($event)">
-            <img src="https://firebasestorage.googleapis.com/v0/b/develop-1ef65.appspot.com/o/icon_file.png?alt=media&token=43967f13-ff65-4e3f-872b-684b0bd8f76a">
+            <img src="../assets/tools_file.png">
           </div>
         </div>
         <div class="roomBottom__input">
@@ -158,13 +158,14 @@ export default {
       const userName = document.querySelector('#js-userName');
       // 取得上傳檔案的資料
       const file = e.target.files[0];
+      const fileName = Math.floor(Date.now() / 1000) + `_${file.name}`;
       const metadata = {
         contentType: 'image/*'
       };
       // 取得HTML進度條元素
       let progressBar = document.querySelector('#js-progressBar');
-      // 上傳任務設定
-      const uploadTask = storageRef.child('images/' + file.name).put(file, metadata);
+      // 上傳資訊設定
+      const uploadTask = storageRef.child(fileName).put(file, metadata);
       // 上傳狀態處理
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
         /* 上傳進度 */
