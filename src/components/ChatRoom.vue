@@ -30,7 +30,7 @@
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
                 <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
-                <img class="messageBox__image" v-if="item.type == 'image'" v-html="rawHtml" :src="item.message">
+                <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
             </div>
@@ -41,20 +41,26 @@
               <div class="messageBox__time">{{item.timeStamp}}</div>
               <div class="messageBox__content">
                 <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
-                <img class="messageBox__image" v-if="item.type == 'image'" v-html="rawHtml" :src="item.message">
+                <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
             </div>
           </template>
         </template>
+        <!-- 區塊：上傳進度條 -->
+        <div v-show="upload" class="messageBox messageBox--self">
+          <div class="messageBox__progress">
+            <div id="js-progressBar" class="messageBox__progress--state"></div>
+            <div class="messageBox__progress--number">{{progress}}</div>
+          </div>
+        </div>
       </div>
       <!-- 區塊：bottom -->
       <!-- 註解：使用:class來寫class是否顯示的判斷式{ class: 判斷式 } -->
       <div class="roomBottom" :class="{ disable: !userName }">
         <div class="roomBottom__tools">
           <div class="roomBottom__tools_upload">
-            <input type="file" accept="image/*" capture="camera" @change="sendImage($event)">
+            <input type="file" accept="image/*" @change="sendImage($event)">
             <img src="https://firebasestorage.googleapis.com/v0/b/develop-1ef65.appspot.com/o/icon_file.png?alt=media&token=43967f13-ff65-4e3f-872b-684b0bd8f76a">
-            
           </div>
         </div>
         <div class="roomBottom__input">
@@ -91,7 +97,9 @@ export default {
   data() {
     return {
       userName: '',
-      messages: []
+      messages: [],
+      upload: false,
+      progress: ''
     }
   },
   // 這個頁面的functions
@@ -153,32 +161,39 @@ export default {
         contentType: 'image/*'
       };
       const uploadTask = storageRef.child('images/' + file.name).put(file, metadata);
+      let progressBar = document.querySelector('#js-progressBar');
+
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
+        /* 上傳進度 */
         function(snapshot) {
-          let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
-          switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-              console.log('Upload is paused');
-              break;
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-              console.log('Upload is running');
-              break;
+          let progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          if(progress < 100) {
+            // 開啟進度條
+            vm.upload = true;
+            vm.progress = `${progress}%`;
+            progressBar.setAttribute('style',`width:${progress}%`);
           }
         },
+        /* 錯誤處理 */
         function(error) {
-          console.log(error.code)
+          msgRef.child('bug/').push({
+            userName: userName.value,
+            type: 'image',
+            message: error.code,
+            timeStamp: vm.getTime()
+          })
         },
+        /* 上傳結束處理 */
         function() {
           var downloadURL = uploadTask.snapshot.downloadURL;
-          // 更新db
           msgRef.push({
             userName: userName.value,
             type: 'image',
             message: downloadURL,
-            // 取得時間，這裡的vm.getTime()就是method中的getTime
             timeStamp: vm.getTime()
           })
+          // 關閉進度條 
+          vm.upload = false;
         });
     }
   },
@@ -321,10 +336,12 @@ export default {
   white-space: pre-line;
 }
 .messageBox__image {
+  margin: 5px 25px 5px 5px;
+}
+.messageBox__image img {
+  border-radius: 5px;
   max-width: 100%;
   max-height: 335px;
-  margin: 5px;
-  border-radius: 5px
 }
 .messageBox__time {
   transform: scale(0.7);
@@ -332,6 +349,28 @@ export default {
   vertical-align: bottom;
   margin: 0px 0px 5px -12px;
   display: inline-block;
+}
+.messageBox__progress {
+  width: 25%;
+  margin-right: 60px;
+  border-radius: 5px;
+  background-color: #D4D9E1;
+  height: 6px;
+}
+.messageBox__progress--state {
+  background-color: #00CE00;
+  height: 6px;
+  width: 10%;
+  border-radius: 5px;
+  float: right;
+}
+.messageBox__progress--number {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 12px;
+  color: #B7B7B7;
+  margin-right: 35px;
 }
 .messageBox--self {
   text-align: right;
