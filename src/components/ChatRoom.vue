@@ -156,13 +156,16 @@ export default {
     sendImage(e) {
       const vm = this;
       const userName = document.querySelector('#js-userName');
+      // 取得上傳檔案的資料
       const file = e.target.files[0];
       const metadata = {
         contentType: 'image/*'
       };
-      const uploadTask = storageRef.child('images/' + file.name).put(file, metadata);
+      // 取得HTML進度條元素
       let progressBar = document.querySelector('#js-progressBar');
-
+      // 上傳任務設定
+      const uploadTask = storageRef.child('images/' + file.name).put(file, metadata);
+      // 上傳狀態處理
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
         /* 上傳進度 */
         function(snapshot) {
