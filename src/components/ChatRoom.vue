@@ -51,7 +51,11 @@
       <!-- 註解：使用:class來寫class是否顯示的判斷式{ class: 判斷式 } -->
       <div class="roomBottom" :class="{ disable: !userName }">
         <div class="roomBottom__tools">
-          <input type="file" accept="image/*" capture="camera" class="roomBottom__tools_upload" @change="sendImage($event)">
+          <div class="roomBottom__tools_upload">
+            <input type="file" accept="image/*" capture="camera" @change="sendImage($event)">
+            <img src="https://firebasestorage.googleapis.com/v0/b/develop-1ef65.appspot.com/o/icon_file.png?alt=media&token=43967f13-ff65-4e3f-872b-684b0bd8f76a">
+            
+          </div>
         </div>
         <div class="roomBottom__input">
           <!-- 若要再帶入原生js的event(e)到function中，必須使用$event當參數傳入 -->
@@ -350,7 +354,33 @@ export default {
   border-top: solid 1px #E7E7E7;
   border-bottom: solid 2px #E7E7E7;
   background-color: #F6F6F6;
-  height: 30px
+  height: 30px;
+  padding: 0px 5px;
+}
+.roomBottom__tools_upload {
+  height: 20px;
+  margin: 5px;
+  padding: 1px;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+.roomBottom__tools_upload:hover {
+  border: solid 1px #999999;
+}
+.roomBottom__tools_upload input {
+  width: 100%;
+  height: 100%;
+  /* 讓input file可以支援pointer要加pl100% */
+  padding-left: 100%;
+  left: 0;
+  right: 0;
+  opacity: 0; 
+  position: absolute;
+  cursor: pointer;
+}
+.roomBottom__tools_upload img {
+  height: 100%;
 }
 .roomBottom__input {
   padding: 10px 10px 5px 10px;
