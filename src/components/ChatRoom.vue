@@ -29,7 +29,7 @@
               <div class="messageBox__content">
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
-                <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
+                <div v-if="item.type == 'text'" class="messageBox__message" :class="{ disable: !userName }">{{item.message}}</div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
@@ -89,9 +89,6 @@
 <script>
 // msgRef = firebase中的資料表/messages/，若沒有的會自動建立
 const msgRef = firebase.database().ref('/messages/');
-msgRef.orderByChild("type").equalTo('image').on("child_added", function(snapshot) {
-  console.log(snapshot.key);
-});
 const storageRef = firebase.storage().ref('/images/');
 export default {
   // 指定此頁使用的name
@@ -174,11 +171,11 @@ export default {
         /* 上傳進度 */
         function(snapshot) {
           let progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          if(progress < 100) {
+          if (progress < 100) {
             // 開啟進度條
             vm.upload = true;
             vm.progress = `${progress}%`;
-            progressBar.setAttribute('style',`width:${progress}%`);
+            progressBar.setAttribute('style', `width:${progress}%`);
           }
         },
         /* 錯誤處理 */
@@ -214,9 +211,21 @@ export default {
   },
   // update是vue的生命週期之一，在元件渲染完成後執行
   updated() {
+    // 字太多隱藏
+    const messageMore = document.createTextNode(`<div class="js-readMore messageBox__readMore">顯示更多</div>`);
+    let messages = document.querySelectorAll('.messageBox__message');
+
+    console.log(messages);
+    messages.forEach((message) => {
+      if (message.offsetHeight > 100) {
+        console.log(message);
+        message.appendChild(messageMore);
+      }
+    })
     // 當畫面渲染完成，把聊天視窗滾到最底部(讀取最新消息)
     const roomBody = document.querySelector('#js-roomBody');
     roomBody.scrollTop = roomBody.scrollHeight;
+    
   }
 }
 </script>
@@ -328,10 +337,11 @@ export default {
   vertical-align: top;
   cursor: pointer;
 }
-.messageBox__message{
+.messageBox__message {
   margin: 5px 0px 5px 5px;
   padding: 8px 10px 7px 11px;
   font-size: 12px;
+  color: #35393D;
   letter-spacing: 0.6px;
   background-color: #E3E8EB;
   border-radius: 12px;
@@ -340,6 +350,14 @@ export default {
   word-break: break-all;
   /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
+}
+.messageBox__readMore {
+  border-top: 1px solid #999;
+  margin: 10px 0px;
+  padding: 6px 13px;
+  left: 0;
+  right: 0;
+  position: absolute;
 }
 .messageBox__image {
   margin: 5px 25px 5px 5px;
@@ -418,7 +436,7 @@ export default {
   height: 100%;
   left: 0;
   right: 0;
-  opacity: 0; 
+  opacity: 0;
   position: absolute;
   cursor: pointer;
   /* 讓input file可以支援pointer要加pl100% */
