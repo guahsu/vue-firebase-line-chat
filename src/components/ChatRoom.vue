@@ -29,7 +29,7 @@
               <div class="messageBox__content">
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
-                <div v-if="item.type == 'text'" class="messageBox__message" :class="{ disable: !userName }">{{item.message}}</div>
+                <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
@@ -70,14 +70,14 @@
       </div>
     </div>
     <!-- 區塊：modal -->
-    <div id="js-modal" class="modal">
+    <div v-show="userNameSet || userName == ''" class="modal">
       <div class="modal__container">
         <header class="modal__header">
           <h2 class="view-title">輸入名稱</h2>
         </header>
         <div class="modal__body">
           <!-- 註解：使用@keydown.enter來偵測keydown enter，觸發時執行method中的saveName() -->
-          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()">
+          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()" :value="userName">
           <div class="button" @click="saveName()">設定</div>
         </div>
         <footer class="modal__footer"></footer>
@@ -96,17 +96,19 @@ export default {
   // 資料位置，於html中可用{{}}渲染出來
   data() {
     return {
-      userName: '',
-      messages: [],
-      upload: false,
-      progress: ''
+      userNameSet: false, // 姓名輸入框
+      userName: '', // 名稱
+      messages: [], // 訊息內容
+      upload: false, // 上傳進度框
+      progress: '' // 上傳進度%數
     }
   },
   // 這個頁面的functions
   methods: {
     /** 彈出設定視窗 */
     setName() {
-      document.querySelector('#js-modal').style.display = 'block';
+      const vm = this;
+      vm.userNameSet = true;
     },
     /** 儲存設定名稱 */
     saveName() {
@@ -116,7 +118,7 @@ export default {
       if (userName.trim() == '') { return; }
       // 這裡的vm.userName(this.userName)就是data()裡面的userName
       vm.userName = userName;
-      document.querySelector('#js-modal').style.display = 'none';
+      vm.userNameSet = false;
     },
     /** 取得時間 */
     getTime() {
@@ -196,7 +198,7 @@ export default {
             message: downloadURL,
             timeStamp: vm.getTime()
           })
-          // 關閉進度條 
+          // 關閉進度條
           vm.upload = false;
         });
     }
@@ -211,21 +213,9 @@ export default {
   },
   // update是vue的生命週期之一，在元件渲染完成後執行
   updated() {
-    // 字太多隱藏
-    const messageMore = document.createTextNode(`<div class="js-readMore messageBox__readMore">顯示更多</div>`);
-    let messages = document.querySelectorAll('.messageBox__message');
-
-    console.log(messages);
-    messages.forEach((message) => {
-      if (message.offsetHeight > 100) {
-        console.log(message);
-        message.appendChild(messageMore);
-      }
-    })
     // 當畫面渲染完成，把聊天視窗滾到最底部(讀取最新消息)
     const roomBody = document.querySelector('#js-roomBody');
     roomBody.scrollTop = roomBody.scrollHeight;
-    
   }
 }
 </script>
@@ -350,14 +340,6 @@ export default {
   word-break: break-all;
   /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
-}
-.messageBox__readMore {
-  border-top: 1px solid #999;
-  margin: 10px 0px;
-  padding: 6px 13px;
-  left: 0;
-  right: 0;
-  position: absolute;
 }
 .messageBox__image {
   margin: 5px 25px 5px 5px;
