@@ -29,7 +29,10 @@
               <div class="messageBox__content">
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
-                <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
+                <div v-if="item.type == 'text'" class="messageBox__message">
+                  <div class="messageBox__text">{{item.message}}</div>
+                  <div class="messageBox__readMore" @click="readMore($event)">顯示更多</div>
+                </div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
@@ -201,6 +204,13 @@ export default {
           // 關閉進度條
           vm.upload = false;
         });
+    },
+    /** 顯示更多 */
+    readMore(e) {
+      // 把內容高度限制取消
+      e.target.previousElementSibling.setAttribute('style', 'max-height: 100%;')
+      // 隱藏"顯示更多"按紐
+      e.target.setAttribute('style', 'display: none;');
     }
   },
   // mounted是vue的生命週期之一，代表模板已編譯完成，已經取值準備渲染元件了
@@ -213,6 +223,13 @@ export default {
   },
   // update是vue的生命週期之一，在元件渲染完成後執行
   updated() {
+    // 判斷內容高度超過300就隱藏起來，把"顯示更多"按紐打開
+    const messages = document.querySelectorAll('.messageBox__message');
+    messages.forEach((message) => {
+      if (message.offsetHeight > 300) {
+        message.querySelector('.messageBox__readMore').setAttribute('style', 'display: block');
+      }
+    })
     // 當畫面渲染完成，把聊天視窗滾到最底部(讀取最新消息)
     const roomBody = document.querySelector('#js-roomBody');
     roomBody.scrollTop = roomBody.scrollHeight;
@@ -329,7 +346,6 @@ export default {
 }
 .messageBox__message {
   margin: 5px 0px 5px 5px;
-  padding: 8px 10px 7px 11px;
   font-size: 12px;
   color: #35393D;
   letter-spacing: 0.6px;
@@ -340,6 +356,20 @@ export default {
   word-break: break-all;
   /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
+}
+.messageBox__text {
+  padding: 8px 10px 7px 11px;
+  max-height: 300px;
+  overflow: hidden;
+}
+.messageBox__readMore {
+  border-top: 1px solid #D9DBDD;
+  margin-top: 6px;
+  padding: 6px 13px 10px 13px;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+  display: none;
 }
 .messageBox__image {
   margin: 5px 25px 5px 5px;
@@ -512,11 +542,13 @@ export default {
 }
 
 /* media */
+
 @media screen and (max-width: 425px) {
   .messageBox__content {
     max-width: 60%;
   }
 }
+
 @media screen and (max-width: 385px) {
   .messageBox__content {
     max-width: 50%;
