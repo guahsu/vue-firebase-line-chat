@@ -29,7 +29,10 @@
               <div class="messageBox__content">
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
                 <div class="messageBox__name">{{item.userName}}</div>
-                <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
+                <div v-if="item.type == 'text'" class="messageBox__message">
+                  <div class="messageBox__text">{{item.message}}</div>
+                  <div class="messageBox__readMore" @click="readMore($event)">顯示更多</div>
+                </div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
               <div class="messageBox__time">{{item.timeStamp}}</div>
@@ -70,14 +73,14 @@
       </div>
     </div>
     <!-- 區塊：modal -->
-    <div id="js-modal" class="modal">
+    <div v-show="userNameSet || userName == ''" class="modal">
       <div class="modal__container">
         <header class="modal__header">
           <h2 class="view-title">輸入名稱</h2>
         </header>
         <div class="modal__body">
           <!-- 註解：使用@keydown.enter來偵測keydown enter，觸發時執行method中的saveName() -->
-          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()">
+          <input type="text" id="js-userName" class="userName" maxlength="6" @keydown.enter="saveName()" :value="userName">
           <div class="button" @click="saveName()">設定</div>
         </div>
         <footer class="modal__footer"></footer>
@@ -89,9 +92,6 @@
 <script>
 // msgRef = firebase中的資料表/messages/，若沒有的會自動建立
 const msgRef = firebase.database().ref('/messages/');
-msgRef.orderByChild("type").equalTo('image').on("child_added", function(snapshot) {
-  console.log(snapshot.key);
-});
 const storageRef = firebase.storage().ref('/images/');
 export default {
   // 指定此頁使用的name
@@ -99,17 +99,19 @@ export default {
   // 資料位置，於html中可用{{}}渲染出來
   data() {
     return {
-      userName: '',
-      messages: [],
-      upload: false,
-      progress: ''
+      userNameSet: false, // 姓名輸入框
+      userName: '', // 名稱
+      messages: [], // 訊息內容
+      upload: false, // 上傳進度框
+      progress: '' // 上傳進度%數
     }
   },
   // 這個頁面的functions
   methods: {
     /** 彈出設定視窗 */
     setName() {
-      document.querySelector('#js-modal').style.display = 'block';
+      const vm = this;
+      vm.userNameSet = true;
     },
     /** 儲存設定名稱 */
     saveName() {
@@ -119,7 +121,7 @@ export default {
       if (userName.trim() == '') { return; }
       // 這裡的vm.userName(this.userName)就是data()裡面的userName
       vm.userName = userName;
-      document.querySelector('#js-modal').style.display = 'none';
+      vm.userNameSet = false;
     },
     /** 取得時間 */
     getTime() {
@@ -174,11 +176,11 @@ export default {
         /* 上傳進度 */
         function(snapshot) {
           let progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          if(progress < 100) {
+          if (progress < 100) {
             // 開啟進度條
             vm.upload = true;
             vm.progress = `${progress}%`;
-            progressBar.setAttribute('style',`width:${progress}%`);
+            progressBar.setAttribute('style', `width:${progress}%`);
           }
         },
         /* 錯誤處理 */
@@ -199,9 +201,16 @@ export default {
             message: downloadURL,
             timeStamp: vm.getTime()
           })
-          // 關閉進度條 
+          // 關閉進度條
           vm.upload = false;
         });
+    },
+    /** 顯示更多 */
+    readMore(e) {
+      // 把內容高度限制取消
+      e.target.previousElementSibling.setAttribute('style', 'max-height: 100%;')
+      // 隱藏"顯示更多"按紐
+      e.target.setAttribute('style', 'display: none;');
     }
   },
   // mounted是vue的生命週期之一，代表模板已編譯完成，已經取值準備渲染元件了
@@ -214,6 +223,13 @@ export default {
   },
   // update是vue的生命週期之一，在元件渲染完成後執行
   updated() {
+    // 判斷內容高度超過300就隱藏起來，把"顯示更多"按紐打開
+    const messages = document.querySelectorAll('.messageBox__message');
+    messages.forEach((message) => {
+      if (message.offsetHeight > 300) {
+        message.querySelector('.messageBox__readMore').setAttribute('style', 'display: block');
+      }
+    })
     // 當畫面渲染完成，把聊天視窗滾到最底部(讀取最新消息)
     const roomBody = document.querySelector('#js-roomBody');
     roomBody.scrollTop = roomBody.scrollHeight;
@@ -328,10 +344,10 @@ export default {
   vertical-align: top;
   cursor: pointer;
 }
-.messageBox__message{
+.messageBox__message {
   margin: 5px 0px 5px 5px;
-  padding: 8px 10px 7px 11px;
   font-size: 12px;
+  color: #35393D;
   letter-spacing: 0.6px;
   background-color: #E3E8EB;
   border-radius: 12px;
@@ -340,6 +356,20 @@ export default {
   word-break: break-all;
   /*：與html的<pre></pre>同效果，可以使textarea的換行元素正常顯示 */
   white-space: pre-line;
+}
+.messageBox__text {
+  padding: 8px 10px 7px 11px;
+  max-height: 300px;
+  overflow: hidden;
+}
+.messageBox__readMore {
+  border-top: 1px solid #D9DBDD;
+  margin-top: 6px;
+  padding: 6px 13px 10px 13px;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+  display: none;
 }
 .messageBox__image {
   margin: 5px 25px 5px 5px;
@@ -418,7 +448,7 @@ export default {
   height: 100%;
   left: 0;
   right: 0;
-  opacity: 0; 
+  opacity: 0;
   position: absolute;
   cursor: pointer;
   /* 讓input file可以支援pointer要加pl100% */
@@ -512,11 +542,13 @@ export default {
 }
 
 /* media */
+
 @media screen and (max-width: 425px) {
   .messageBox__content {
     max-width: 60%;
   }
 }
+
 @media screen and (max-width: 385px) {
   .messageBox__content {
     max-width: 50%;
