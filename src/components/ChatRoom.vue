@@ -43,7 +43,9 @@
             <div class="messageBox messageBox--self">
               <div class="messageBox__time">{{item.timeStamp}}</div>
               <div class="messageBox__content">
-                <div v-if="item.type == 'text'" class="messageBox__message">{{item.message}}</div>
+                <div v-if="item.type == 'text'" class="messageBox__message">
+                  <div class="messageBox__text">{{item.message}}</div>
+                </div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
               </div>
             </div>
@@ -358,7 +360,7 @@ export default {
   white-space: pre-line;
 }
 .messageBox__text {
-  padding: 8px 10px 7px 11px;
+  padding: 8px 10px 9px 11px;
   max-height: 300px;
   overflow: hidden;
 }
@@ -414,6 +416,11 @@ export default {
 .messageBox--self .messageBox__message {
   background-color: #AFF47E;
   margin-right: 25px;
+}
+.messageBox--self .messageBox__message__text {
+  padding: 8px 10px 9px 11px;
+  max-height: 100%;
+  overflow: unset;
 }
 .messageBox--self .messageBox__time {
   margin: 0px -16px 5px 0px;
