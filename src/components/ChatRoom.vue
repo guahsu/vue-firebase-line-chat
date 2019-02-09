@@ -24,7 +24,7 @@
         <template v-for="item in messages">
           <!-- other people -->
           <template v-if="item.userName != userName">
-            <div class="messageBox">
+            <div class="messageBox" :key="item.id">
               <img src="https://lorempixel.com/40/40/" class="messageBox__user" draggable="false">
               <div class="messageBox__content">
                 <!-- 註解：Vue使用雙花括號{{}}來顯示script中data:的資料 -->
@@ -40,13 +40,20 @@
           </template>
           <!-- 區塊：self -->
           <template v-if="item.userName == userName">
-            <div class="messageBox messageBox--self">
+            <div
+              class="messageBox messageBox--self"
+              @mouseenter="hoverMessageId = item.id"
+              @mouseleave="hoverMessageId = null"
+              :key="item.id">
               <div class="messageBox__time">{{item.timeStamp}}</div>
               <div class="messageBox__content">
                 <div v-if="item.type == 'text'" class="messageBox__message">
                   <div class="messageBox__text">{{item.message}}</div>
                 </div>
                 <div v-if="item.type == 'image'" class="messageBox__image"><img :src="item.message"></div>
+              </div>
+              <div v-if="hoverMessageId === item.id" class="messageBox__delete">
+                <span @click="deleteMessage(hoverMessageId)">刪除</span>
               </div>
             </div>
           </template>
@@ -101,6 +108,7 @@ export default {
   // 資料位置，於html中可用{{}}渲染出來
   data() {
     return {
+      hoverMessageId: null,
       userNameSet: false, // 姓名輸入框
       userName: '', // 名稱
       messages: [], // 訊息內容
@@ -207,6 +215,11 @@ export default {
           vm.upload = false;
         });
     },
+    /** 刪除訊息 */
+    deleteMessage(id) {
+      const message = msgRef.child(id)
+      message.remove()
+    },
     /** 顯示更多 */
     readMore(e) {
       // 把內容高度限制取消
@@ -220,7 +233,10 @@ export default {
     const vm = this;
     msgRef.on('value', function(snapshot) {
       const val = snapshot.val();
-      vm.messages = val;
+      const messageData = val
+        ? Object.keys(val).map(key => ({ id: key, ...val[key] }))
+        : null
+      vm.messages = messageData;
     })
   },
   // update是vue的生命週期之一，在元件渲染完成後執行
@@ -387,6 +403,12 @@ export default {
   vertical-align: bottom;
   margin: 0px 0px 5px -12px;
   display: inline-block;
+}
+.messageBox__delete {
+  font-size: 12px;
+  color: #ACB0B8;
+  margin-right: 25px;
+  cursor: pointer;
 }
 .messageBox__progress {
   width: 25%;
